@@ -3,7 +3,7 @@
 require_relative './lib'
 include Zipography
 
-alien = Alien.new $stdin
+alien = Alien.new ARGV[0]
 puts "Blob size:    #{alien.size}"
 puts "Checksum:     0x#{alien.checksum.to_s 16}"
 puts "Valid:        #{alien.valid}"

@@ -3,5 +3,5 @@
 require_relative './lib'
 include Zipography
 
-alien = Alien.new $stdin
+alien = Alien.new ARGV[0]
 alien.valid ? $stdout.write(alien.blob) : exit(1)

@@ -24,7 +24,7 @@ module Zipography
   end
 
   class Alien
-    def initialize io; @io = io; end
+    def initialize file; @io = File.open file; end
 
     def size
       @io.seek(-4, IO::SEEK_END)

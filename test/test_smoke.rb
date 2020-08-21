@@ -17,7 +17,7 @@ class Smoke < Minitest::Test
   end
 
   def test_info_and_extract
-    info = `./zipography-info < #{@zip_new}`
+    info = `./zipography-info #{@zip_new}`
     assert_equal 0, $?.exitstatus
     assert_equal({
                    "Blob size" => 18313,
@@ -26,7 +26,7 @@ class Smoke < Minitest::Test
                  }, YAML.load(info))
 
     blob = SecureRandom.hex
-    `./zipography-extract < #{@zip_new} > #{blob}`
+    `./zipography-extract #{@zip_new} > #{blob}`
     assert_equal 0, $?.exitstatus
     `cmp test/blob1.png #{blob}`
     assert_equal 0, $?.exitstatus
@@ -42,7 +42,7 @@ class Smoke < Minitest::Test
     zip[zip.size-102] = 'L'
     File.open(@zip_new, 'w') { |f| f.write zip }
 
-    info = `./zipography-info < #{@zip_new}`
+    info = `./zipography-info #{@zip_new}`
     assert_equal 0, $?.exitstatus
     assert_equal({
                    "Blob size" => 18313,
