@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+require_relative './lib'
+include Zipography
+
+alien = Alien.new $stdin
+puts "blob_size    #{alien.size}"
+puts "checksum     0x#{alien.checksum.to_s 16}"
+puts "valid        #{alien.valid}"

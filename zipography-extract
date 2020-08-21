@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require_relative './lib'
+include Zipography
+
+alien = Alien.new $stdin
+alien.valid ? $stdout.write(alien.blob) : exit(1)

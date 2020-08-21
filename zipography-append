@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+require_relative './lib'
+include Zipography
+
+abort "Usage: #{File.basename __FILE__} old.zip blob > new.zip" if ARGV.size < 2
+
+$stdout.write File.read ARGV[0]
+data = File.read ARGV[1]
+$stdout.write Blob.encrypt data
+$stdout.write Zipography.checksum data
+$stdout.write Blob.size ARGV[1]
