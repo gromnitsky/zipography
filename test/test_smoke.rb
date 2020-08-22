@@ -20,8 +20,9 @@ class Smoke < Minitest::Test
     info = `./zipography-info #{@zip_new}`
     assert_equal 0, $?.exitstatus
     assert_equal({
-                   "Blob size" => 18313,
-                   "Checksum" => 109129119,
+                   "Payload size" => 18313,
+                   "Adler32" => 109129119,
+                   "Version" => 1,
                    "Valid" => true
                  }, YAML.load(info))
 
@@ -37,16 +38,17 @@ class Smoke < Minitest::Test
   def test_checksum
     # change some bytes in the payload
     zip = File.read @zip_new
-    zip[zip.size-100] = 'L'
-    zip[zip.size-101] = 'O'
-    zip[zip.size-102] = 'L'
+    zip[zip.size-300] = 'L'
+    zip[zip.size-301] = 'O'
+    zip[zip.size-302] = 'L'
     File.open(@zip_new, 'w') { |f| f.write zip }
 
     info = `./zipography-info #{@zip_new}`
     assert_equal 0, $?.exitstatus
     assert_equal({
-                   "Blob size" => 18313,
-                   "Checksum" => 109129119,
+                   "Payload size" => 18313,
+                   "Adler32" => 109129119,
+                   "Version" => 1,
                    "Valid" => false # yup
                  }, YAML.load(info))
   end
