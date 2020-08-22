@@ -2,10 +2,33 @@ require 'zlib'
 
 module Zipography
 
-  HEADER_SIZE = 8               # byte
+  HEADER_SIZE = 8               # bytes
 
   def self.checksum str         # 32bit, little-endian
     [Zlib.adler32(str)].pack 'l<'
+  end
+
+  class MyZip
+    def initialize file
+      @buf = File.read file
+      @first_cdh = first_central_dir_header
+      @eocd = end_of_central_dir
+    end
+    attr_reader :buf, :first_cdh, :eocd
+
+    def first_central_dir_header
+      pos = @buf.index [0x02014b50].pack('V')
+      fail 'not a suitable zip file' if pos == -1
+      pos
+    end
+
+    def end_of_central_dir
+      @buf.rindex [0x06054b50].pack('V')
+    end
+
+    def before
+      @buf.slice(0, @first_cdh)
+    end
   end
 
   module Blob
@@ -20,7 +43,8 @@ module Zipography
       msg.zip(pw).map {|c1,c2| c1^c2}.pack 'c*'
     end
 
-    def self.encrypt data; xor_cipher(data, "passw0rd"); end
+#    def self.encrypt data; xor_cipher(data, "passw0rd"); end
+    def self.encrypt data; data; end
   end
 
   class Alien

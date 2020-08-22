@@ -5,8 +5,19 @@ include Zipography
 
 abort "Usage: #{File.basename __FILE__} old.zip blob > new.zip" if ARGV.size < 2
 
-$stdout.write File.read ARGV[0]
-data = File.read ARGV[1]
-$stdout.write Blob.encrypt data
-$stdout.write Zipography.checksum data
-$stdout.write Blob.size ARGV[1]
+z = MyZip.new ARGV[0]
+$stdout.write z.before
+
+data = Blob.encrypt(File.read ARGV[1])
+$stdout.write data
+
+$stdout.write z.buf.slice(z.first_cdh, (z.eocd+16) - z.first_cdh)
+
+offset = z.buf.slice(z.eocd+16, 4).unpack('V').first
+$stderr.puts "old eocd cd offset = #{offset}"
+
+new_offset = offset + data.bytesize
+$stderr.puts "new eocd cd offset = #{new_offset}"
+
+$stdout.write [offset + data.bytesize].pack('V')
+$stdout.write z.buf.slice(z.eocd+16+4, z.buf.size)
