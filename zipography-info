@@ -3,7 +3,10 @@
 require_relative './lib'
 include Zipography
 
-alien = Alien.new ARGV[0]
-puts "Blob size:    #{alien.size}"
-puts "Checksum:     0x#{alien.checksum.to_s 16}"
-puts "Valid:        #{alien.valid}"
+z = MyZip.new ARGV[0]
+blob = z.blob
+
+puts "Payload size:    #{blob[:header][:len]}"
+puts "Adler32:         0x" + blob[:header][:checksum].to_i.to_s(16)
+puts "Version:         #{blob[:header][:version]}"
+puts "Valid:           #{z.payload_valid?(blob)}"

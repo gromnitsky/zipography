@@ -3,5 +3,6 @@
 require_relative './lib'
 include Zipography
 
-alien = Alien.new ARGV[0]
-alien.valid ? $stdout.write(alien.blob) : exit(1)
+z = MyZip.new ARGV[0]
+blob = z.blob
+z.payload_valid?(blob) ? $stdout.write(blob[:payload]) : exit(1)

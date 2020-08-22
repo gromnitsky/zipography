@@ -1,73 +1,79 @@
 require 'zlib'
+require 'bindata'
 
 module Zipography
 
-  HEADER_SIZE = 8               # bytes
+  HEADER_SIZE = 9               # bytes
+  class HiddenBlob < BinData::Record
+    endian :little
 
-  def self.checksum str         # 32bit, little-endian
-    [Zlib.adler32(str)].pack 'l<'
+    uint32 :checksum
+    uint32 :len
+    uint8 :version, initial_value: 1
+  end
+
+  def checksum s; Zlib.adler32(s); end
+
+  def blob_make file
+    payload = File.read file
+    header = HiddenBlob.new len: File.stat(file).size,
+                            checksum: checksum(payload)
+    [payload.force_encoding('ASCII-8BIT'), header.to_binary_s].join
   end
 
   class MyZip
     def initialize file
+      @file = file
       @buf = File.read file
-      @first_cdh = first_central_dir_header
       @eocd = end_of_central_dir
+      @first_cdh = first_central_dir_header
     end
-    attr_reader :buf, :first_cdh, :eocd
 
     def first_central_dir_header
-      pos = @buf.index [0x02014b50].pack('V')
-      fail 'not a suitable zip file' if pos == -1
-      pos
+      @buf.index [0x02014b50].pack('V')
     end
 
     def end_of_central_dir
-      @buf.rindex [0x06054b50].pack('V')
+      pos = @buf.rindex [0x06054b50].pack('V')
+      fail 'not a zip file' unless pos
+      pos
     end
 
-    def before
-      @buf.slice(0, @first_cdh)
-    end
-  end
-
-  module Blob
-    def self.size file          # 32bit, little-endian
-      [File.stat(file).size].pack 'l<'
+    # start of central dir offset
+    def offset
+      @buf.slice(@eocd+16, 4).unpack('V').first
     end
 
-    def self.xor_cipher str, password
-      msg = str.unpack 'c*'
-      pw = password.unpack 'c*'
-      pw *= msg.length/pw.length + 1
-      msg.zip(pw).map {|c1,c2| c1^c2}.pack 'c*'
-    end
-
-#    def self.encrypt data; xor_cipher(data, "passw0rd"); end
-    def self.encrypt data; data; end
-  end
-
-  class Alien
-    def initialize file; @io = File.open file; end
-
-    def size
-      @io.seek(-4, IO::SEEK_END)
-      (@io.read 4).unpack('l<').first
-    end
-
-    def checksum
-      @io.seek(-8, IO::SEEK_END)
-      (@io.read 4).unpack('l<').first
+    # very crude: instead of an intelligent parsing of eocd, modifying
+    # an offset, replacing eocd, we just change the offset. this won't
+    # fly for zip64 files
+    def repack data
+      [
+        @buf.slice(0, @first_cdh),
+        data,
+        # just before the offset of start of central dir
+        @buf.slice(@first_cdh, (@eocd+16) - @first_cdh),
+        # inject new offset
+        [offset + data.bytesize].pack('V'),
+        # the rest
+        @buf.slice(@eocd+16+4, @buf.size)
+      ]
     end
 
     def blob
-      len = size
-      @io.seek(-(HEADER_SIZE+len), IO::SEEK_END)
-      Blob.encrypt(@io.read len)
+      payload = ''
+      header = {}
+      File.open(@file) do |f|
+        f.seek(offset-HEADER_SIZE)
+        header = HiddenBlob.read f
+        f.seek(offset-HEADER_SIZE-header.len)
+        payload = f.read header.len
+      end
+      { header: header, payload: payload }
     end
 
-    def valid
-      checksum == Zipography.checksum(blob).unpack('l<').first
+    def payload_valid? blob
+      blob[:header][:checksum] == checksum(blob[:payload])
     end
   end
 
