@@ -8,7 +8,7 @@ include Zipography
 class Smoke < Minitest::Test
   def setup
     @zip_new = SecureRandom.hex
-    `./zipography-append test/orig.zip test/blob1.png > #{@zip_new}`
+    `./zipography-inject test/orig.zip test/blob1.png > #{@zip_new}`
     assert_equal 0, $?.exitstatus
   end
 
