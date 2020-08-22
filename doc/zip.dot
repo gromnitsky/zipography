@@ -1,0 +1,33 @@
+digraph structs {
+  rankdir = LR;
+  fontname = "Times New Roman"
+  label = "An injection of a hidden blob into a .zip file";
+  labelloc = top;
+
+  z
+  [
+   shape = plaintext
+   fontname = "InconsolataN"
+   fontsize = 12
+   label = <<table border="0" cellspacing="0">
+   <tr><td border="1" colspan="2">file 1</td></tr>
+   <tr><td border="1" colspan="2">file 2</td></tr>
+   <tr><td border="1" colspan="2">...</td></tr>
+   <tr><td border="1" colspan="2">file n</td></tr>
+   <tr>
+     <td border="1" rowspan="3" bgcolor="yellow" width="90%"><font point-size="16">Blob</font></td>
+     <td border="1" bgcolor="gold"><font point-size="8">len</font></td>
+   </tr>
+   <tr><td border="1" bgcolor="gold"><font point-size="8">checksum</font></td></tr>
+   <tr><td border="1" bgcolor="gold"><font point-size="8">version</font></td></tr>
+
+   <tr><td port="c1" border="1" colspan="2">central directory header 1 </td></tr>
+   <tr><td border="1" colspan="2">central directory header 2 </td></tr>
+   <tr><td border="1" colspan="2">...</td></tr>
+   <tr><td border="1" colspan="2">central directory header n </td></tr>
+   <tr><td port="eocd" border="1" colspan="2" bgcolor="gray95">end of central directory</td></tr>
+   </table>>
+   ]
+
+  z:eocd -> z:c1;
+}
