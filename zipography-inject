@@ -5,6 +5,22 @@ include Zipography
 
 abort "Usage: #{File.basename __FILE__} old.zip blob > new.zip" if ARGV.size < 2
 
-z = MyZip.new ARGV[0]
-data = blob_make ARGV[1]
-z.repack(data).each {|buf| $stdout.write buf }
+# 1. get EOCD
+eocd_pos = eocd_position ARGV[0]
+eocd = eocd_parse ARGV[0], eocd_position(eocd_pos)
+
+File.open(ARGV[0], 'rb') do |f|
+  # 2. Copy everything before CDH
+  IO.copy_stream f, $stdout, eocd[:cd_offset_start]
+
+  # 3. Inject our blob
+  blob_size = blob_write ARGV[1], $stdout
+
+  # 4. Copy CDH
+  f.seek eocd[:cd_offset_start]
+  IO.copy_stream f, $stdout, eocd_pos - eocd[:cd_offset_start]
+
+  # 5. Add an updated EOCD
+  eocd[:cd_offset_start] += blob_size
+  $stdout.write eocd.to_binary_s
+end

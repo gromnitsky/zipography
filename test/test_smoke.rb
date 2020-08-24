@@ -22,7 +22,7 @@ class Smoke < Minitest::Test
     assert_equal({
                    "Payload size" => 18313,
                    "Adler32" => 109129119,
-                   "Version" => 1,
+                   "Blob version" => 1,
                    "Valid" => true
                  }, YAML.load(info))
 
@@ -44,12 +44,12 @@ class Smoke < Minitest::Test
     File.open(@zip_new, 'w') { |f| f.write zip }
 
     info = `./zipography-info #{@zip_new}`
-    assert_equal 0, $?.exitstatus
+    assert_equal 1, $?.exitstatus
     assert_equal({
                    "Payload size" => 18313,
                    "Adler32" => 109129119,
-                   "Version" => 1,
-                   "Valid" => false # yup
+                   "Blob version" => 1,
+                   "Valid" => "false, invalid checksum 0xf7f72d64"
                  }, YAML.load(info))
   end
 end

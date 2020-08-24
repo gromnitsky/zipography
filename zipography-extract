@@ -3,6 +3,17 @@
 require_relative './lib'
 include Zipography
 
-z = MyZip.new ARGV[0]
-blob = z.blob
-z.payload_valid?(blob) ? $stdout.write(blob[:payload]) : exit(1)
+eocd = eocd_parse ARGV[0], eocd_position(ARGV[0])
+
+File.open(ARGV[0], 'rb') do |f|
+  f.seek eocd[:cd_offset_start] - HIDDEN_BLOB_HEADER_SIZE
+  header = HiddenBlobHeader.read f
+
+  # validate
+  start_location = eocd[:cd_offset_start] - HIDDEN_BLOB_HEADER_SIZE - header.len
+  checksum = adler32_file_slice ARGV[0], start_location, header.len
+  exit 1 unless checksum == header[:checksum]
+
+  f.seek start_location
+  IO.copy_stream f, $stdout, header.len
+end

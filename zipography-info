@@ -3,10 +3,22 @@
 require_relative './lib'
 include Zipography
 
-z = MyZip.new ARGV[0]
-blob = z.blob
+eocd = eocd_parse ARGV[0], eocd_position(ARGV[0])
 
-puts "Payload size:    #{blob[:header][:len]}"
-puts "Adler32:         0x" + blob[:header][:checksum].to_i.to_s(16)
-puts "Version:         #{blob[:header][:version]}"
-puts "Valid:           #{z.payload_valid?(blob)}"
+header = File.open(ARGV[0], 'rb') do |f|
+  f.seek eocd[:cd_offset_start] - HIDDEN_BLOB_HEADER_SIZE
+  HiddenBlobHeader.read f
+end
+
+puts "Payload size:    #{header[:len]}"
+puts "Adler32:         " + adler2hex(header[:checksum])
+puts "Blob version:    #{header[:version]}"
+
+checksum = adler32_file_slice ARGV[0], eocd[:cd_offset_start]-HIDDEN_BLOB_HEADER_SIZE-header.len, header.len
+
+if checksum == header[:checksum]
+  puts "Valid:           true"
+else
+  puts "Valid:           false, invalid checksum #{adler2hex(checksum)}"
+  exit 1
+end
