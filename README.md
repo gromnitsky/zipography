@@ -10,10 +10,16 @@ Limitations:
 
 * single blob only (but you can just add another .zip as a blob);
 * doesn't work w/ zip64 files (this means 4GB max for an archive+blob
-  combo);
-* corrupts zip spec v6.2+ files that use *central directory*
-  encryption;
-* memory hungry, for it's just a toy, not a serious spy tool.
+  combo).
+
+## How does it work?
+
+A blob is injected after a file section right before the 1st *central
+directory header*. After that, a pointer in an *end of central
+directory* record is updated to compensate the shift of the *central
+directory header*.
+
+<img src='doc/zip.svg'>
 
 ## Usage
 
@@ -32,7 +38,7 @@ Inject a picture into the archive:
 
     $ zipography-inject orig.zip blob1.png > 1.zip
 
-It it visible? No:
+Is it visible? It isn't:
 
 ~~~
 $ bsdtar tf 1.zip
@@ -63,15 +69,6 @@ $ xdg-open !$
 ~~~
 
 <img src='test/blob1.png'>
-
-## How does it work?
-
-A blob is injected after a file section right before the 1st *central
-directory header*. After that, a pointer in an *end of central
-directory* record is updated to compensate the shift of the *central
-directory header*.
-
-<img src='doc/zip.svg'>
 
 ## License
 
