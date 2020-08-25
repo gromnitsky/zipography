@@ -99,15 +99,16 @@ module Zipography
     end
   end
 
+  HIDDEN_BLOB_VERSION = 1
+  HIDDEN_BLOB_HEADER_SIZE = 9           # bytes
+
   class HiddenBlobHeader < BinData::Record
     endian :little
 
     uint32 :checksum
     uint32 :len
-    uint8 :version, initial_value: 1
+    uint8 :version, initial_value: HIDDEN_BLOB_VERSION
   end
-
-  HIDDEN_BLOB_HEADER_SIZE = 9           # bytes
 
   def adler32_file file, bufsiz: 1 << 16
     r = nil
@@ -168,5 +169,15 @@ module Zipography
 
     abort op.help if ARGV.size < argv_size
     opt[:output] || $stdout
+  end
+
+  def hbh_validate header
+    header[:len] <= 2**32 - 70 && header[:version] <= HIDDEN_BLOB_VERSION
+  end
+
+  def cd_offset_start_overflow zip_file, offset
+    max = (2**32)-1
+    actual = offset + File.stat(zip_file).size + HIDDEN_BLOB_HEADER_SIZE
+    actual - max
   end
 end

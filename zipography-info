@@ -14,11 +14,14 @@ puts "Payload size:    #{header[:len]}"
 puts "Adler32:         " + adler2hex(header[:checksum])
 puts "Blob version:    #{header[:version]}"
 
+unless hbh_validate header
+  puts "Error:           incompatible version or invalid payload size"
+  exit 1
+end
+
 checksum = adler32_file_slice ARGV[0], eocd[:cd_offset_start]-HIDDEN_BLOB_HEADER_SIZE-header.len, header.len
 
-if checksum == header[:checksum]
-  puts "Valid:           true"
-else
-  puts "Valid:           false, invalid checksum #{adler2hex(checksum)}"
+if checksum != header[:checksum]
+  puts "Error:           invalid checksum #{adler2hex(checksum)}"
   exit 1
 end

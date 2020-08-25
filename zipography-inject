@@ -5,9 +5,13 @@ include Zipography
 
 output = options 'orig.zip blob [-o new.zip]', 2
 
-# 1. get EOCD
+# 0. get EOCD
 eocd_pos = eocd_position ARGV[0]
 eocd = eocd_parse ARGV[0], eocd_position(eocd_pos)
+
+# 1. check a would-be zip size
+oo = cd_offset_start_overflow ARGV[1], eocd[:cd_offset_start]
+fail "`#{ARGV[1]}` is too big: #{oo} extra byte(s)" if oo > 0
 
 File.open(ARGV[0], 'rb') do |f|
   # 2. Copy everything before CDH

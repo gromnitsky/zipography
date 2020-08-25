@@ -23,7 +23,6 @@ class Smoke < Minitest::Test
                    "Payload size" => 18313,
                    "Adler32" => 109129119,
                    "Blob version" => 1,
-                   "Valid" => true
                  }, YAML.load(info))
 
     blob = SecureRandom.hex
@@ -49,7 +48,7 @@ class Smoke < Minitest::Test
                    "Payload size" => 18313,
                    "Adler32" => 109129119,
                    "Blob version" => 1,
-                   "Valid" => "false, invalid checksum 0xf7f72d64"
+                   "Error" => "invalid checksum 0xf7f72d64"
                  }, YAML.load(info))
   end
 end
