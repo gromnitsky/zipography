@@ -1,3 +1,4 @@
+require 'optparse'
 require 'zlib'
 require 'bindata'
 
@@ -156,4 +157,16 @@ module Zipography
 
   def adler2hex i; "0x" + i.to_i.to_s(16); end
 
+  def options usage, argv_size
+    opt = {}; op = OptionParser.new do |o|
+      o.banner = "Usage: #{File.basename $0} #{usage}"
+      o.on("-o FILE", "output") do |arg|
+        opt[:output] = File.open arg, 'wb'
+      end
+    end
+    op.parse!
+
+    abort op.help if ARGV.size < argv_size
+    opt[:output] || $stdout
+  end
 end

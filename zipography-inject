@@ -3,7 +3,7 @@
 require_relative './lib'
 include Zipography
 
-abort "Usage: #{File.basename __FILE__} old.zip blob > new.zip" if ARGV.size < 2
+output = options 'orig.zip blob [-o new.zip]', 2
 
 # 1. get EOCD
 eocd_pos = eocd_position ARGV[0]
@@ -11,16 +11,16 @@ eocd = eocd_parse ARGV[0], eocd_position(eocd_pos)
 
 File.open(ARGV[0], 'rb') do |f|
   # 2. Copy everything before CDH
-  IO.copy_stream f, $stdout, eocd[:cd_offset_start]
+  IO.copy_stream f, output, eocd[:cd_offset_start]
 
   # 3. Inject our blob
-  blob_size = blob_write ARGV[1], $stdout
+  blob_size = blob_write ARGV[1], output
 
   # 4. Copy CDH
   f.seek eocd[:cd_offset_start]
-  IO.copy_stream f, $stdout, eocd_pos - eocd[:cd_offset_start]
+  IO.copy_stream f, output, eocd_pos - eocd[:cd_offset_start]
 
   # 5. Add an updated EOCD
   eocd[:cd_offset_start] += blob_size
-  $stdout.write eocd.to_binary_s
+  output.write eocd.to_binary_s
 end

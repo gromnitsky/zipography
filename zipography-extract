@@ -3,6 +3,8 @@
 require_relative './lib'
 include Zipography
 
+output = options 'file.zip [-o blob]', 1
+
 eocd = eocd_parse ARGV[0], eocd_position(ARGV[0])
 
 File.open(ARGV[0], 'rb') do |f|
@@ -15,5 +17,5 @@ File.open(ARGV[0], 'rb') do |f|
   exit 1 unless checksum == header[:checksum]
 
   f.seek start_location
-  IO.copy_stream f, $stdout, header.len
+  IO.copy_stream f, output, header.len
 end
