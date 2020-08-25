@@ -134,6 +134,7 @@ module Zipography
       f.seek start
       bytes_read = 0
       idx = 0
+      finito = false
       while (chunk = f.read bufsiz)
         bytes_read += chunk.bytesize
 
@@ -143,8 +144,10 @@ module Zipography
           else
             chunk = chunk.byteslice(0, chunk.bytesize - (bytes_read - length))
           end
+          finito = true
         end
         r = Zlib.adler32 chunk, r
+        break if finito
         idx += 1
       end
     end
