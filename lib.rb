@@ -172,7 +172,8 @@ module Zipography
   end
 
   def hbh_validate header
-    header[:len] <= 2**32 - 70 && header[:version] <= HIDDEN_BLOB_VERSION
+    header[:len] <= 2**32 - 70 &&
+      header[:version] > 0 && header[:version] <= HIDDEN_BLOB_VERSION
   end
 
   def cd_offset_start_overflow zip_file, offset

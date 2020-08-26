@@ -12,6 +12,7 @@ File.open(ARGV[0], 'rb') do |f|
   header = HiddenBlobHeader.read f
 
   # validate
+  exit 1 unless hbh_validate header
   start_location = eocd[:cd_offset_start] - HIDDEN_BLOB_HEADER_SIZE - header.len
   checksum = adler32_file_slice ARGV[0], start_location, header.len
   exit 1 unless checksum == header[:checksum]
