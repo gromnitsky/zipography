@@ -89,13 +89,15 @@ module Zipography
   end
 
   def eocd_position file
-    file_rindex(ARGV[0], [0x06054b50].pack('V')) || fail("#{file}: not a zip")
+    file_rindex(file, [0x06054b50].pack('V')) || fail("#{file}: not a zip")
   end
 
   def eocd_parse file, pos
     File.open(file, 'rb') do |f|
       f.seek pos
-      Eocd.read f
+      r = Eocd.read f
+      fail "no support for zip64 format" if r[:cd_offset_start] == 0xFFFFFFFF
+      r
     end
   end
 

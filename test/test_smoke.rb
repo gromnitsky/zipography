@@ -51,4 +51,18 @@ class Smoke < Minitest::Test
                    "Error" => "invalid checksum 0xf7f72d64"
                  }, YAML.load(info))
   end
+
+  def test_zip64
+    r = assert_raises(RuntimeError) do
+      eocd_parse 'test/64.zip', eocd_position('test/64.zip')
+    end
+    assert_equal 'no support for zip64 format', r.message
+  end
+
+  def test_not_a_zip
+    r = assert_raises(RuntimeError) do
+      eocd_position('test/blob1.png')
+    end
+    assert_match(/not a zip$/, r.message)
+  end
 end

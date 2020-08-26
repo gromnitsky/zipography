@@ -7,7 +7,7 @@ output = options 'orig.zip blob [-o new.zip]', 2
 
 # 0. get EOCD
 eocd_pos = eocd_position ARGV[0]
-eocd = eocd_parse ARGV[0], eocd_position(eocd_pos)
+eocd = eocd_parse ARGV[0], eocd_pos
 
 # 1. check a would-be zip size
 oo = cd_offset_start_overflow ARGV[1], eocd[:cd_offset_start]
